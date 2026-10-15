@@ -1,0 +1,235 @@
+
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<section class="welcome-banner">
+  <div class="welcome-copy">
+    <p class="eyebrow">STUDENT SUCCESS INTELLIGENCE</p>
+    <p class="greeting">Good morning, Administrator</p>
+    <h1>Welcome to <span>CampusIQ</span></h1>
+    <p class="welcome-subtitle">
+      Smarter insights. Stronger students. A brighter tomorrow.
+    </p>
+
+    <div class="d-flex flex-wrap gap-2 mt-3">
+      <a href="/api/import/page" class="btn btn-primary">
+        <i class="bi bi-cloud-upload"></i>
+        Import Student Data
+      </a>
+
+      <a href="#student-table" class="btn btn-outline-light">
+        <i class="bi bi-people"></i>
+        View Students
+      </a>
+    </div>
+  </div>
+
+  <div class="welcome-quote">
+    <i class="bi bi-stars"></i>
+    <p>Every student has a unique journey. We're here to help them succeed.</p>
+    <span>AI-assisted · Human-led</span>
+  </div>
+
+  <div class="banner-orb orb-one"></div>
+  <div class="banner-orb orb-two"></div>
+</section>
+
+<div class="section-heading">
+  <div>
+    <p class="eyebrow">AT A GLANCE</p>
+    <h2>Institution overview</h2>
+  </div>
+
+  <select id="departmentFilter"
+          class="form-select department-filter"
+          aria-label="Filter by department">
+    <option>All Departments</option>
+  </select>
+</div>
+
+<section class="stats-grid">
+  <article class="stat-card blue">
+    <div class="stat-top">
+      <span class="stat-icon"><i class="bi bi-people-fill"></i></span>
+      <span class="stat-trend"><i class="bi bi-graph-up"></i></span>
+    </div>
+    <p>Total Students</p>
+    <div class="stat-value" id="totalStudents">—</div>
+    <small>Records in the system</small>
+    <div class="stat-bottom">
+      <span class="mini-line"></span>
+      <span>Unified student view</span>
+    </div>
+  </article>
+
+  <article class="stat-card teal">
+    <div class="stat-top">
+      <span class="stat-icon"><i class="bi bi-star-fill"></i></span>
+      <span class="stat-trend"><i class="bi bi-activity"></i></span>
+    </div>
+    <p>Average Success Score</p>
+    <div class="stat-value" id="averageScore">—</div>
+    <small>Out of 100</small>
+    <div class="stat-bottom">
+      <span class="mini-line"></span>
+      <span>Composite indicator</span>
+    </div>
+  </article>
+
+  <article class="stat-card red">
+    <div class="stat-top">
+      <span class="stat-icon"><i class="bi bi-exclamation-triangle-fill"></i></span>
+      <span class="stat-trend"><i class="bi bi-shield-exclamation"></i></span>
+    </div>
+    <p>Academic Risk</p>
+    <div class="stat-value" id="academicRisk">—</div>
+    <small>High-risk students</small>
+    <div class="stat-bottom">
+      <span class="mini-line"></span>
+      <span>Review recommended</span>
+    </div>
+  </article>
+
+  <article class="stat-card purple">
+    <div class="stat-top">
+      <span class="stat-icon"><i class="bi bi-briefcase-fill"></i></span>
+      <span class="stat-trend"><i class="bi bi-graph-up-arrow"></i></span>
+    </div>
+    <p>Placement Risk</p>
+    <div class="stat-value" id="placementRisk">—</div>
+    <small>High-risk students</small>
+    <div class="stat-bottom">
+      <span class="mini-line"></span>
+      <span>Readiness support</span>
+    </div>
+  </article>
+</section>
+
+<div class="content-grid">
+  <section class="panel performance-panel" id="performance">
+    <div class="panel-heading">
+      <div class="panel-title">
+        <span class="panel-icon blue-icon">
+          <i class="bi bi-bar-chart-line-fill"></i>
+        </span>
+        <div>
+          <h3>Student Performance Overview</h3>
+          <p>Average indicator scores across the institution</p>
+        </div>
+      </div>
+      <span class="live-pill">
+        <span class="status-dot"></span> Live data
+      </span>
+    </div>
+
+    <div class="chart-container">
+      <canvas id="performanceChart"
+              aria-label="Student performance dimensions chart"></canvas>
+    </div>
+  </section>
+
+  <section class="panel ai-panel" id="ai-panel">
+    <div class="panel-heading">
+      <div class="panel-title">
+        <span class="panel-icon violet-icon">
+          <i class="bi bi-robot"></i>
+        </span>
+        <div>
+          <h3>AI Insights</h3>
+          <p>Data-backed signals for faculty review</p>
+        </div>
+      </div>
+      <span class="agent-pill">AGENTS</span>
+    </div>
+
+    <div id="aiInsights" class="insight-list">
+      <div class="empty-state compact">Loading insights…</div>
+    </div>
+
+    <div class="ai-footer">
+      <i class="bi bi-stars"></i>
+      <span>
+        Agent outputs are based on current records.
+        Faculty review is required before action.
+      </span>
+    </div>
+  </section>
+</div>
+
+<div class="content-grid lower-grid">
+  <section class="panel student-panel" id="student-table">
+    <div class="panel-heading">
+      <div class="panel-title">
+        <span class="panel-icon blue-icon">
+          <i class="bi bi-people-fill"></i>
+        </span>
+        <div>
+          <h3>Student Overview</h3>
+          <p>Search students and inspect risk indicators</p>
+        </div>
+      </div>
+      <span class="record-count" id="recordCount">0 records</span>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table student-table align-middle">
+        <thead>
+          <tr>
+            <th>STUDENT ID</th>
+            <th>NAME</th>
+            <th>DEPARTMENT</th>
+            <th>SUCCESS SCORE</th>
+            <th>SEGMENT</th>
+            <th>ACADEMIC RISK</th>
+          </tr>
+        </thead>
+        <tbody id="studentRows">
+          <tr>
+            <td colspan="6" class="empty-cell">
+              Loading student records…
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-foot">
+      <span>Use search and department filters to explore the records.</span>
+      <button id="refreshButton" class="btn btn-sm btn-outline-light">
+        <i class="bi bi-arrow-clockwise"></i> Refresh
+      </button>
+    </div>
+  </section>
+
+  <section class="panel risk-panel" id="risk-panel">
+    <div class="panel-heading">
+      <div class="panel-title">
+        <span class="panel-icon red-icon">
+          <i class="bi bi-shield-check"></i>
+        </span>
+        <div>
+          <h3>Risk Monitoring</h3>
+          <p>Academic risk distribution</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="risk-chart-wrap">
+      <canvas id="riskChart"
+              aria-label="Academic risk distribution chart"></canvas>
+      <div class="risk-legend" id="riskLegend"></div>
+    </div>
+
+    <div class="segment-preview" id="segments">
+      <h4><i class="bi bi-diagram-3"></i> Student segments</h4>
+      <div id="segmentList" class="segment-list"></div>
+    </div>
+  </section>
+</div>
+
+<div class="toast-message"
+     id="toastMessage"
+     role="status"
+     aria-live="polite"></div>
+{% endblock %}

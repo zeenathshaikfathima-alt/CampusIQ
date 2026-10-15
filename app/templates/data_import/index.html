@@ -1,0 +1,436 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4"
+     style="color:#e5e7eb;min-height:100vh;background:#0b1120;">
+
+    <!-- Page header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <p class="text-uppercase small mb-2"
+               style="color:#60a5fa;letter-spacing:2px;">
+                CAMPUSIQ / DATA MANAGEMENT
+            </p>
+            <h1 class="fw-bold mb-2">Data Integration</h1>
+            <p style="color:#94a3b8;">
+                Import student data to power success analytics and risk insights.
+            </p>
+        </div>
+        <a href="/" class="btn btn-outline-light">← Back to Dashboard</a>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Main column -->
+        <div class="col-lg-8">
+            <div class="p-4 rounded-4 border"
+                 style="background:#111b2e;border-color:#26354d !important;">
+
+                <h4 class="fw-semibold mb-2">Upload Dataset</h4>
+                <p class="small mb-4" style="color:#94a3b8;">
+                    Select a category and upload a CSV file. Maximum size: 5 MB.
+                </p>
+
+                <form id="csvImportForm" enctype="multipart/form-data">
+                    <label for="category" class="form-label">Dataset Category</label>
+                    <select id="category" name="category"
+                            class="form-select mb-4"
+                            style="background:#0b1120;color:#e5e7eb;border-color:#334155;"
+                            required>
+                        <option value="students">Student Profiles</option>
+                        <option value="academic">Academic Performance</option>
+                        <option value="attendance">Attendance</option>
+                        <option value="lms">LMS &amp; Assignments</option>
+                        <option value="engagement">Student Engagement</option>
+                        <option value="placement">Placement Readiness</option>
+                        <option value="skills">Technical &amp; Soft Skills</option>
+                        <option value="feedback">Student Feedback</option>
+                    </select>
+
+                    <label for="csvFile" class="form-label">CSV File</label>
+                    <div class="rounded-4 p-5 text-center mb-4"
+                         style="border:2px dashed #334155;background:#0b1120;">
+                        <div style="font-size:40px;color:#60a5fa;">⇧</div>
+                        <h5 class="mt-3">Choose your CSV file</h5>
+                        <p class="small" style="color:#94a3b8;">
+                            CSV format only · Maximum 5 MB
+                        </p>
+                        <input type="file" id="csvFile" name="file"
+                               class="form-control mt-3"
+                               accept=".csv,text/csv" required
+                               style="background:#111b2e;color:#e5e7eb;border-color:#334155;">
+                        <p id="fileName" class="small mt-2 mb-0"
+                           style="color:#60a5fa;"></p>
+                    </div>
+
+                    <button type="submit" id="importButton"
+                            class="btn w-100 py-3 fw-semibold"
+                            style="background:#3b82f6;color:white;border:0;">
+                        Import Dataset
+                    </button>
+                </form>
+
+                <div id="importStatus" class="mt-4"
+                     role="status" aria-live="polite"></div>
+
+                <!-- Import statistics -->
+                <div class="mt-4 pt-4" style="border-top:1px solid #26354d;">
+                    <h5 class="fw-semibold mb-3">Import Statistics</h5>
+
+                    <div class="row g-3 mb-4" id="importStats">
+                        <div class="col-md-4">
+                            <div class="p-3 rounded-3 border h-100"
+                                 style="background:#0b1120;border-color:#26354d !important;">
+                                <p class="small mb-2" style="color:#94a3b8;">
+                                    Total Imports
+                                </p>
+                                <h3 class="fw-bold mb-0" id="totalImports">0</h3>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="p-3 rounded-3 border h-100"
+                                 style="background:#0b1120;border-color:#26354d !important;">
+                                <p class="small mb-2" style="color:#94a3b8;">
+                                    Rows Processed
+                                </p>
+                                <h3 class="fw-bold mb-0" id="totalRowsProcessed">0</h3>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="p-3 rounded-3 border h-100"
+                                 style="background:#0b1120;border-color:#26354d !important;">
+                                <p class="small mb-2" style="color:#94a3b8;">
+                                    Rejected Rows
+                                </p>
+                                <h3 class="fw-bold mb-0" id="totalRejectedRows">0</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Import history -->
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                        <div>
+                            <h5 class="fw-semibold mb-1">Import History</h5>
+                            <p class="small mb-0" style="color:#94a3b8;">
+                                Review your recent CSV imports.
+                            </p>
+                        </div>
+                        <button type="button" id="refreshHistoryButton"
+                                class="btn btn-outline-light btn-sm">
+                            Refresh History
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>File</th>
+                                    <th>Category</th>
+                                    <th>Rows</th>
+                                    <th>Created</th>
+                                    <th>Updated</th>
+                                    <th>Rejected</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="importHistoryRows">
+                                <tr>
+                                    <td colspan="7" class="text-center"
+                                        style="color:#94a3b8;">
+                                        Loading import history...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <p class="small mb-0" style="color:#64748b;">
+                        Statistics are calculated from the import records returned by the history API.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="p-4 rounded-4 border mb-4"
+                 style="background:#111b2e;border-color:#26354d !important;">
+                <h5 class="fw-semibold mb-3">Import Workflow</h5>
+
+                <div class="d-flex gap-3 mb-4">
+                    <div style="color:#60a5fa;font-size:22px;">01</div>
+                    <div>
+                        <strong>Select a category</strong>
+                        <p class="small mt-1 mb-0" style="color:#94a3b8;">
+                            Choose the dataset you want to import.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3 mb-4">
+                    <div style="color:#60a5fa;font-size:22px;">02</div>
+                    <div>
+                        <strong>Upload a CSV</strong>
+                        <p class="small mt-1 mb-0" style="color:#94a3b8;">
+                            Use the required column names for that category.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <div style="color:#60a5fa;font-size:22px;">03</div>
+                    <div>
+                        <strong>Review results</strong>
+                        <p class="small mt-1 mb-0" style="color:#94a3b8;">
+                            Check imported records and rejected rows.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 rounded-4 border"
+                 style="background:#111b2e;border-color:#26354d !important;">
+                <h5 class="fw-semibold mb-3">Required Columns</h5>
+                <div id="requiredColumns" class="small"
+                     style="color:#cbd5e1;"></div>
+
+                <hr style="border-color:#334155;" class="my-3">
+
+                <h6 class="fw-semibold mb-3">Download CSV Templates</h6>
+                <div class="d-flex flex-column gap-3 small">
+                    <a href="/static/templates/students.csv" download>Student Profiles</a>
+                    <a href="/static/templates/academic.csv" download>Academic Performance</a>
+                    <a href="/static/templates/attendance.csv" download>Attendance</a>
+                    <a href="/static/templates/lms.csv" download>LMS &amp; Assignments</a>
+                    <a href="/static/templates/engagement.csv" download>Student Engagement</a>
+                    <a href="/static/templates/placement.csv" download>Placement Readiness</a>
+                    <a href="/static/templates/skills.csv" download>Technical &amp; Soft Skills</a>
+                    <a href="/static/templates/feedback.csv" download>Student Feedback</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+"use strict";
+
+// Elements
+const categorySelect = document.getElementById("category");
+const requiredColumns = document.getElementById("requiredColumns");
+const csvFile = document.getElementById("csvFile");
+const fileName = document.getElementById("fileName");
+const form = document.getElementById("csvImportForm");
+const importButton = document.getElementById("importButton");
+const importStatus = document.getElementById("importStatus");
+const historyRows = document.getElementById("importHistoryRows");
+
+// Escape values before inserting them into HTML.
+function esc(value) {
+    return String(value ?? "").replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    })[character]);
+}
+
+// Required columns by dataset category.
+const columnGuide = {
+    students: "student_id, name, department. Optional: year",
+    academic: "student_id, cgpa, backlogs",
+    attendance: "student_id, attendance",
+    lms: "student_id, lms_logins_week, assignment_completion",
+    engagement: "student_id, engagement_score",
+    placement: "student_id, aptitude_score, coding_score, mock_interview_score",
+    skills: "student_id, technical_skill_score, soft_skill_score",
+    feedback: "student_id, satisfaction_score"
+};
+
+function updateColumnGuide() {
+    requiredColumns.textContent =
+        columnGuide[categorySelect.value] || "";
+}
+
+categorySelect.addEventListener("change", updateColumnGuide);
+
+csvFile.addEventListener("change", () => {
+    const file = csvFile.files[0];
+    fileName.textContent = file ? `Selected: ${file.name}` : "";
+});
+
+// Load history and calculate statistics.
+async function loadImportHistory() {
+    historyRows.innerHTML = `
+        <tr>
+            <td colspan="7" class="text-center" style="color:#94a3b8;">
+                Loading import history...
+            </td>
+        </tr>`;
+
+    try {
+        const response = await fetch("/api/import-history/");
+
+        if (!response.ok) {
+            throw new Error(`History request failed (${response.status})`);
+        }
+
+        const data = await response.json();
+        const imports = Array.isArray(data.imports) ? data.imports : [];
+
+        // Statistics based on the records returned by the API.
+        document.getElementById("totalImports").textContent =
+            Number(data.total ?? imports.length);
+
+        document.getElementById("totalRowsProcessed").textContent =
+            imports.reduce(
+                (sum, item) => sum + (Number(item.rows_received) || 0),
+                0
+            );
+
+        document.getElementById("totalRejectedRows").textContent =
+            imports.reduce(
+                (sum, item) => sum + (Number(item.rejected) || 0),
+                0
+            );
+
+        if (imports.length === 0) {
+            historyRows.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center" style="color:#94a3b8;">
+                        No imports recorded yet.
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        historyRows.innerHTML = imports.map(item => {
+            const date = item.imported_at
+                ? new Date(item.imported_at).toLocaleString()
+                : "—";
+
+            return `
+                <tr>
+                    <td>${esc(item.filename)}</td>
+                    <td>${esc(item.category)}</td>
+                    <td>${Number(item.rows_received) || 0}</td>
+                    <td>${Number(item.created) || 0}</td>
+                    <td>${Number(item.updated) || 0}</td>
+                    <td>${Number(item.rejected) || 0}</td>
+                    <td>${esc(date)}</td>
+                </tr>`;
+        }).join("");
+
+    } catch (error) {
+        console.error("Import history error:", error);
+
+        historyRows.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center text-danger">
+                    Could not load import history. Check the Flask server.
+                </td>
+            </tr>`;
+    }
+}
+
+// Manual history refresh.
+document.getElementById("refreshHistoryButton")
+    .addEventListener("click", loadImportHistory);
+
+// Submit a CSV import.
+form.addEventListener("submit", async event => {
+    event.preventDefault();
+    importStatus.replaceChildren();
+
+    const file = csvFile.files[0];
+
+    if (!file) {
+        importStatus.textContent = "Please select a CSV file.";
+        return;
+    }
+
+    if (!file.name.toLowerCase().endsWith(".csv")) {
+        importStatus.textContent = "Only CSV files are supported.";
+        return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+        importStatus.textContent = "The file must be smaller than 5 MB.";
+        return;
+    }
+
+    const formData = new FormData(form);
+
+    importButton.disabled = true;
+    importButton.textContent = "Importing...";
+
+    try {
+        const response = await fetch("/api/import/csv", {
+            method: "POST",
+            body: formData
+        });
+
+        const result = await response.json();
+        const message = document.createElement("div");
+
+        message.className = "p-3 rounded-3";
+        message.style.background = "#0b1120";
+        message.style.border = "1px solid #334155";
+
+        if (!response.ok) {
+            message.style.color = "#fca5a5";
+            message.textContent = result.error || "Import failed.";
+            importStatus.appendChild(message);
+            return;
+        }
+
+        message.style.color = "#86efac";
+        message.textContent =
+            `Import completed. Created: ${result.created}, ` +
+            `updated: ${result.updated}, ` +
+            `rejected: ${result.rejected_count}.`;
+
+        if (Array.isArray(result.rejected) && result.rejected.length > 0) {
+            const details = document.createElement("ul");
+            details.className = "mt-3 mb-0";
+            details.style.color = "#fca5a5";
+
+            result.rejected.forEach(item => {
+                const listItem = document.createElement("li");
+                listItem.textContent =
+                    `Row ${item.row}: ${item.reason}`;
+                details.appendChild(listItem);
+            });
+
+            message.appendChild(details);
+        }
+
+        importStatus.appendChild(message);
+
+        // Refresh statistics and history without navigating away.
+        await loadImportHistory();
+
+        // Clear the file selection after a successful request.
+        form.reset();
+        fileName.textContent = "";
+        updateColumnGuide();
+
+    } catch (error) {
+        console.error("CSV import error:", error);
+        importStatus.textContent =
+            "Could not contact the server. Check that CampusIQ is running.";
+    } finally {
+        importButton.disabled = false;
+        importButton.textContent = "Import Dataset";
+    }
+});
+
+// Initial page setup.
+updateColumnGuide();
+loadImportHistory();
+</script>
+{% endblock %}
